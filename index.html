@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Experiencia Cósmica Interactiva</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow-x: hidden;
+            height: 100vh;
+            margin: 0;
+        }
+        
+        .stars-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: #fff;
+            border-radius: 50%;
+        }
+        
+        .nebula {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.3;
+            mix-blend-mode: screen;
+        }
+        
+        .galaxy {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle at center, 
+                rgba(255, 255, 255, 0.8) 0%, 
+                rgba(111, 0, 255, 0.5) 20%, 
+                rgba(0, 183, 255, 0.3) 40%, 
+                rgba(0, 0, 0, 0) 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 60px rgba(111, 0, 255, 0.5);
+            animation: pulse 4s infinite alternate;
+            z-index: 1;
+        }
+        
+        .spiral {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: conic-gradient(
+                transparent 0deg,
+                transparent 30deg,
+                rgba(255, 255, 255, 0.1) 40deg,
+                transparent 50deg,
+                transparent 210deg,
+                rgba(255, 255, 255, 0.1) 220deg,
+                transparent 230deg,
+                transparent 360deg
+            );
+            border-radius: 50%;
+            animation: spin 60s linear infinite;
+        }
+        
+        .content {
+            position: relative;
+            z-index: 2;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .title {
+            font-size: 4rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #00b7ff, #7f00ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(127, 0, 255, 0.5);
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeIn 2s forwards 0.5s;
+        }
+        
+        .subtitle {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(-20px);
+            animation: fadeIn 2s forwards 1s;
+        }
+        
+        .interactive-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeIn 2s forwards 1.5s;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            background: rgba(127, 0, 255, 0.2);
+            color: #fff;
+            border: 2px solid #7f00ff;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(127, 0, 255, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.5s ease;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn:hover {
+            background: rgba(127, 0, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(127, 0, 255, 0.8);
+        }
+        
+        .planet {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            position: absolute;
+            box-shadow: inset -10px -10px 20px rgba(0, 0, 0, 0.5);
+            transition: transform 1s ease;
+        }
+        
+        .counter {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 1.2rem;
+            border: 1px solid rgba(127, 0, 255, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+        }
+        
+        .counter-icon {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(to right, #00b7ff, #7f00ff);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite alternate;
+        }
+        
+        .portal {
+            width: 100px;
+            height: 100px;
+            background: conic-gradient(
+                #7f00ff, #00b7ff, #7f00ff
+            );
+            border-radius: 50%;
+            position: absolute;
+            filter: blur(8px);
+            animation: spin 8s linear infinite;
+            opacity: 0;
+            transition: all 0.5s ease;
+            z-index: 3;
+        }
+        
+        .portal::before {
+            content: '';
+            position: absolute;
+            top: 20%;
+            left: 20%;
+            width: 60%;
+            height: 60%;
+            background: #000;
+            border-radius: 50%;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .message {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            z-index: 10;
+        }
+        
+        .cosmic-object {
+            position: absolute;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-container" id="stars-container"></div>
+    
+    <div class="galaxy">
+        <div class="spiral"></div>
+    </div>
+    
+    <div class="content">
+        <h1 class="title">EXPLORADOR CÓSMICO</h1>
+        <p class="subtitle">Un viaje interactivo a través del universo digital</p>
+        
+        <div class="interactive-buttons">
+            <button class="btn" id="create-star">Crear Estrella</button>
+            <button class="btn" id="create-planet">Añadir Planeta</button>
+            <button class="btn" id="create-portal">Abrir Portal</button>
+            <button class="btn" id="toggle-gravity">Alternar Gravedad</button>
+        </div>
+    </div>
+    
+    <div class="counter">
+        <span class="counter-icon"></span>
+        <span id="counter-value">0</span> objetos cósmicos
+    </div>
+    
+    <div class="message">
+        Haz clic en cualquier lugar para crear un evento cósmico
+    </div>
+    
+    <script>
+        // Variables
+        let count = 0;
+        let gravityEnabled = false;
+        const counterEl = document.getElementById('counter-value');
+        const starsContainer = document.getElementById('stars-container');
+        const colors = [
+            '#FF6B6B', '#4ECDC4', '#FF8C42', '#6A0572', 
+            '#AB83A1', '#F8C3CD', '#AEC5EB', '#F3D250'
+        ];
+        
+        // Initial stars
+        createInitialStars();
+        createNebulas();
+        
+        // Event listeners
+        document.getElementById('create-star').addEventListener('click', () => {
+            createStar(
+                Math.random() * window.innerWidth,
+                Math.random() * window.innerHeight,
+                Math.random() * 3 + 1
+            );
+        });
+        
+        document.getElementById('create-planet').addEventListener('click', () => {
+            createPlanet();
+        });
+        
+        document.getElementById('create-portal').addEventListener('click', () => {
+            createPortal();
+        });
+        
+        document.getElementById('toggle-gravity').addEventListener('click', () => {
+            gravityEnabled = !gravityEnabled;
+            const stars = document.querySelectorAll('.star');
+            
+            if (gravityEnabled) {
+                stars.forEach(star => {
+                    star.style.transition = 'transform 5s cubic-bezier(0.4, 0, 1, 1)';
+                    star.style.transform = `translate(${window.innerWidth/2 - parseFloat(star.style.left)}px, ${window.innerHeight/2 - parseFloat(star.style.top)}px)`;
+                });
+            } else {
+                stars.forEach(star => {
+                    star.style.transition = 'transform 3s ease';
+                    star.style.transform = 'translate(0, 0)';
+                });
+            }
+        });
+        
+        // Click anywhere to create cosmic event
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn')) return;
+            
+            const randomEffect = Math.floor(Math.random() * 3);
+            
+            switch(randomEffect) {
+                case 0:
+                    createStar(e.clientX, e.clientY, Math.random() * 3 + 1);
+                    break;
+                case 1:
+                    const cosmiObject = document.createElement('div');
+                    cosmiObject.classList.add('cosmic-object');
+                    cosmiObject.style.left = `${e.clientX - 25}px`;
+                    cosmiObject.style.top = `${e.clientY - 25}px`;
+                    cosmiObject.style.width = `${Math.random() * 50 + 20}px`;
+                    cosmiObject.style.height = cosmiObject.style.width;
+                    cosmiObject.style.borderRadius = '50%';
+                    cosmiObject.style.background = `radial-gradient(circle at 30% 30%, ${colors[Math.floor(Math.random() * colors.length)]}, #000)`;
+                    cosmiObject.style.boxShadow = `0 0 20px ${colors[Math.floor(Math.random() * colors.length)]}`;
+                    document.body.appendChild(cosmiObject);
+                    
+                    setTimeout(() => {
+                        cosmiObject.style.opacity = '1';
+                    }, 10);
+                    
+                    updateCounter();
+                    break;
+                case 2:
+                    createRipple(e.clientX, e.clientY);
+                    break;
+            }
+        });
+        
+        // Functions
+        function createInitialStars() {
+            for (let i = 0; i < 200; i++) {
+                createStar(
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight,
+                    Math.random() * 2 + 0.5,
+                    false // Don't update counter for initial stars
+                );
+            }
+        }
+        
+        function createNebulas() {
+            for (let i = 0; i < 5; i++) {
+                const nebula = document.createElement('div');
+                nebula.classList.add('nebula');
+                nebula.style.width = `${Math.random() * 300 + 200}px`;
+                nebula.style.height = nebula.style.width;
+                nebula.style.left = `${Math.random() * window.innerWidth}px`;
+                nebula.style.top = `${Math.random() * window.innerHeight}px`;
+                nebula.style.background = `radial-gradient(circle at center, ${colors[Math.floor(Math.random() * colors.length)]}, transparent)`;
+                starsContainer.appendChild(nebula);
+            }
+        }
+        
+        function createStar(x, y, size, countIt = true) {
+            const star = document.createElement('div');
+            star.classList.add('star');
+            star.style.left = `${x}px`;
+            star.style.top = `${y}px`;
+            star.style.width = `${size}px`;
+            star.style.height = `${size}px`;
+            
+            // Make some stars twinkle
+            if (Math.random() > 0.7) {
+                star.style.animation = `pulse ${Math.random() * 3 + 2}s infinite alternate`;
+            }
+            
+            starsContainer.appendChild(star);
+            
+            if (countIt) {
+                updateCounter();
+            }
+        }
+        
+        function createPlanet() {
+            const planet = document.createElement('div');
+            planet.classList.add('planet');
+            
+            // Random position
+            const angle = Math.random() * Math.PI * 2;
+            const distance = 300 + Math.random() * 100;
+            const x = Math.cos(angle) * distance + window.innerWidth / 2 - 30;
+            const y = Math.sin(angle) * distance + window.innerHeight / 2 - 30;
+            
+            planet.style.left = `${x}px`;
+            planet.style.top = `${y}px`;
+            
+            // Random planet appearance
+            const planetColor = colors[Math.floor(Math.random() * colors.length)];
+            planet.style.background = `radial-gradient(circle at 30% 30%, ${planetColor}, #000)`;
+            
+            // Add orbit animation
+            const orbitSpeed = Math.random() * 20 + 20;
+            const orbitDelay =
